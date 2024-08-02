@@ -182,6 +182,6 @@ impl Tokenizer {
         // Decrease `i` by 1 to counter the extra increment in the loop
         *i -= 1;
 
-        println!("NUMBER {} {}", number_str number_str);
+        println!("NUMBER {} {}", number_str, number_str);
     }
 }

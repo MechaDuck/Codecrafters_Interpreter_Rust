@@ -160,12 +160,16 @@ impl Tokenizer {
         // Decrease `i` by 1 to counter the extra increment in the loop
         *i -= 1;
 
-        if !number_str.contains('.') {
-            let float_number_str = format!("{}.0", number_str);
-            println!("NUMBER {} {}", number_str, float_number_str);
-        } else {
-            println!("NUMBER {} {}", number_str, number_str);
+        let mut interpreted_number = number_str.clone();
+        if decimal_found {
+            interpreted_number = interpreted_number.trim_end_matches('0').to_string();
+            if !interpreted_number.contains('.') {
+               interpreted_number = format!("{}.0", interpreted_number);
+            }
         }
+
+        println!("NUMBER {} {}", number_str, interpreted_number);
+ 
     }
 
     fn handle_identifier(&mut self, chars: &[char], i: &mut usize) {

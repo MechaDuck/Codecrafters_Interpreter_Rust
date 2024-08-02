@@ -163,6 +163,7 @@ impl Tokenizer {
         let mut interpreted_number = number_str.clone();
         if decimal_found {
             interpreted_number = interpreted_number.trim_end_matches('0').to_string();
+            interpreted_number = format!("{}0", interpreted_number);
 
         }
         if !interpreted_number.contains('.') {

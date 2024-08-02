@@ -46,6 +46,14 @@ fn main() {
                                 println!("EQUAL = null");
                             }
                         },
+                        '!' => {
+                            if i + 1 < chars.len() && chars[i + 1] == '=' {
+                                println!("BANG_EQUAL != null");
+                                i += 1; // Skip the next character as it's part of the double equal sign
+                            } else {
+                                println!("BANG ! null");
+                            }
+                        },
                         _ => { 
                             eprintln!("[line {}] Error: Unexpected character: {}", line_number, chars[i]);
                             found_error = true;

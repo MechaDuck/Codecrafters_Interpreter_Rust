@@ -1,55 +1,26 @@
+use std::collections::HashSet;
 use std::env;
 use std::fs;
 use std::io::{self, Write};
 use std::process;
 
-
-
-fn main() {
-    let args: Vec<String> = env::args().collect();
-    if args.len() < 3 {
-        writeln!(io::stderr(), "Usage: {} tokenize <filename>", args[0]).unwrap();
-        process::exit(64); // Exit code for incorrect usage
-    }
-
-    let command = &args[1];
-    let filename = &args[2];
-
-    if command != "tokenize" {
-        writeln!(io::stderr(), "Unknown command: {}", command).unwrap();
-        process::exit(64); // Exit code for unknown command
-    }
-
-    let file_contents = fs::read_to_string(filename).unwrap_or_else(|_| {
-        writeln!(io::stderr(), "Failed to read file {}", filename).unwrap();
-        process::exit(66); // Exit code for file read error
-    });
-
-    let mut tokenizer = Tokenizer::new();
-
-    for line in file_contents.lines() {
-        tokenizer.tokenize(line);
-        tokenizer.line_number += 1;
-    }
-
-    println!("EOF  null");
-    if tokenizer.found_error {
-        process::exit(65); // Exit code for parsing errors
-    }
-}
-
-
-
 struct Tokenizer {
     found_error: bool,
     line_number: usize,
+    identifiers: HashSet<String>,
 }
 
 impl Tokenizer {
     fn new() -> Self {
+        let mut identifiers = HashSet::new();
+        identifiers.insert("foo".to_string());
+        identifiers.insert("bar".to_string());
+        identifiers.insert("_hello".to_string());
+        
         Self {
             found_error: false,
             line_number: 1,
+            identifiers,
         }
     }
 
@@ -73,14 +44,11 @@ impl Tokenizer {
                 '!' => self.handle_bang(&chars, &mut i),
                 '<' => self.handle_less(&chars, &mut i),
                 '>' => self.handle_greater(&chars, &mut i),
-                '/' => {
-                    if self.handle_slash(&chars, &mut i){
-                        break;
-                    }
-                },
+                '/' => self.handle_slash(&chars, &mut i),
                 '\t' | ' ' => {}, // Ignore tabs and spaces
                 '"' => self.handle_string(&chars, &mut i),
                 '0'..='9' => self.handle_number(&chars, &mut i),
+                'a'..='z' | 'A'..='Z' | '_' => self.handle_identifier(&chars, &mut i),
                 _ => self.handle_unexpected(chars[i]),
             }
             i += 1;
@@ -127,15 +95,13 @@ impl Tokenizer {
         }
     }
 
-    fn handle_slash(&mut self, chars: &[char], i: &mut usize) -> bool {
+    fn handle_slash(&mut self, chars: &[char], i: &mut usize) {
         if *i + 1 < chars.len() && chars[*i + 1] == '/' {
-            // Return true for "Comment detected", so the line can be skipped
-            return true;
-        } 
-        println!("SLASH / null");
-        return false;
-        
-
+            // Comment detected, skip the rest of the line
+            return;
+        } else {
+            println!("SLASH / null");
+        }
     }
 
     fn handle_string(&mut self, chars: &[char], i: &mut usize) {
@@ -158,10 +124,61 @@ impl Tokenizer {
         } else {
             // Print the string with literal escape sequences
             println!(
-                "STRING \"{}\" {}",
+                "STRING {:?} {}",
                 tmp_string,
-                tmp_string.trim_matches('"')
+                tmp_string.replace("\t", "\\t").replace("\n", "\\n")
             );
+        }
+    }
+
+    fn handle_number(&mut self, chars: &[char], i: &mut usize) {
+        let mut number_str = String::new();
+        let mut decimal_found = false;
+
+        while *i < chars.len() && (chars[*i].is_digit(10) || chars[*i] == '.') {
+            if chars[*i] == '.' {
+                if decimal_found {
+                    // Handle error: multiple decimal points
+                    eprintln!("[line {}] Error: Multiple decimal points in number.", self.line_number);
+                    self.found_error = true;
+                    break;
+                }
+                decimal_found = true;
+            }
+            number_str.push(chars[*i]);
+            *i += 1;
+        }
+
+        // Adjust `i` by 1 to counter the extra increment in the loop
+        *i -= 1;
+
+        if decimal_found && number_str.ends_with('.') {
+            // Remove the trailing dot for the first print
+            let number_without_dot = number_str.trim_end_matches('.');
+            let float_number_str = format!("{}0", number_without_dot);
+            println!("NUMBER {} (without trailing dot) {}", number_without_dot, float_number_str);
+        } else {
+            println!("NUMBER {} {}", number_str, number_str);
+        }
+    }
+
+    fn handle_identifier(&mut self, chars: &[char], i: &mut usize) {
+        let mut identifier_str = String::new();
+
+        // Collect identifier characters
+        while *i < chars.len() && (chars[*i].is_alphanumeric() || chars[*i] == '_') {
+            identifier_str.push(chars[*i]);
+            *i += 1;
+        }
+
+        // Adjust `i` by 1 to counter the extra increment in the loop
+        *i -= 1;
+
+        if self.identifiers.contains(&identifier_str) {
+            println!("IDENTIFIER {} null", identifier_str);
+        } else {
+            // Handle undefined identifiers if necessary
+            eprintln!("[line {}] Warning: Undefined identifier: {}", self.line_number, identifier_str);
         }
     }
 
@@ -169,35 +186,37 @@ impl Tokenizer {
         eprintln!("[line {}] Error: Unexpected character: {}", self.line_number, c);
         self.found_error = true;
     }
+}
 
-    fn handle_number(&mut self, chars: &[char], i: &mut usize) {
-        let mut number_str = String::new();
-        let mut decimal_found = false;
-        // Collect digits to form the number
-        while *i < chars.len() && (chars[*i].is_digit(10) || chars[*i] == '.') {
-            if chars[*i] == '.'{
-                if decimal_found{
-                    // TODO: ERROR HANDLING
-                    break;
-                }
-                if (*i + 1) < chars.len() && chars[*i + 1].is_digit(10){
-                    decimal_found = true;
-                }else {
-                    break;
-                }
-            }
-            number_str.push(chars[*i]);
-            *i += 1;
-        }
+fn main() {
+    let args: Vec<String> = env::args().collect();
+    if args.len() < 3 {
+        writeln!(io::stderr(), "Usage: {} tokenize <filename>", args[0]).unwrap();
+        process::exit(64); // Exit code for incorrect usage
+    }
 
-        // Decrease `i` by 1 to counter the extra increment in the loop
-        *i -= 1;
+    let command = &args[1];
+    let filename = &args[2];
 
-        if !number_str.contains('.') {
-            let float_number_str = format!("{}.0", number_str);
-            println!("NUMBER {} {}", number_str, float_number_str);
-        } else {
-            println!("NUMBER {} {}", number_str, number_str);
-        }
+    if command != "tokenize" {
+        writeln!(io::stderr(), "Unknown command: {}", command).unwrap();
+        process::exit(64); // Exit code for unknown command
+    }
+
+    let file_contents = fs::read_to_string(filename).unwrap_or_else(|_| {
+        writeln!(io::stderr(), "Failed to read file {}", filename).unwrap();
+        process::exit(66); // Exit code for file read error
+    });
+
+    let mut tokenizer = Tokenizer::new();
+
+    for line in file_contents.lines() {
+        tokenizer.tokenize(line);
+        tokenizer.line_number += 1;
+    }
+
+    println!("EOF  null");
+    if tokenizer.found_error {
+        process::exit(65); // Exit code for parsing errors
     }
 }

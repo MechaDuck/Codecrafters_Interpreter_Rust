@@ -130,13 +130,12 @@ impl Tokenizer {
         } else {
             // Print the string with literal escape sequences
             println!(
-                "STRING {:?} {}",
+                "STRING \"{}\" {}",
                 tmp_string,
-                tmp_string.replace("\t", "\\t").replace("\n", "\\n")
+                tmp_string.trim_matches('"')
             );
         }
     }
-
     fn handle_number(&mut self, chars: &[char], i: &mut usize) {
         let mut number_str = String::new();
         let mut decimal_found = false;
@@ -161,7 +160,7 @@ impl Tokenizer {
         *i -= 1;
 
         let mut interpreted_number = number_str.clone();
-        // 200.100 -> 200.1
+        // 200.100 -> 200.1y
         if decimal_found {
             interpreted_number = interpreted_number.trim_end_matches('0').to_string();
         }

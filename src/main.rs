@@ -13,10 +13,22 @@ struct Tokenizer {
 impl Tokenizer {
     fn new() -> Self {
         let mut identifiers = HashSet::new();
-        identifiers.insert("foo".to_string());
-        identifiers.insert("bar".to_string());
-        identifiers.insert("_hello".to_string());
-        
+        identifiers.insert("and".to_string());
+        identifiers.insert("class".to_string());
+        identifiers.insert("else".to_string());
+        identifiers.insert("false".to_string());
+        identifiers.insert("for".to_string());
+        identifiers.insert("fun".to_string());
+        identifiers.insert("if".to_string());
+        identifiers.insert("nil".to_string());
+        identifiers.insert("or".to_string());
+        identifiers.insert("print".to_string());
+        identifiers.insert("return".to_string());
+        identifiers.insert("super".to_string());
+        identifiers.insert("this".to_string());
+        identifiers.insert("true".to_string());
+        identifiers.insert("var".to_string());
+        identifiers.insert("while".to_string());
         Self {
             found_error: false,
             line_number: 1,
@@ -191,14 +203,14 @@ impl Tokenizer {
 
 
         // Accept all identifiers
-        println!("IDENTIFIER {} null", identifier_str);
+        
 
-        // if self.identifiers.contains(&identifier_str) {
-        //     println!("IDENTIFIER {} null", identifier_str);
-        // } else {
-        //     // Handle undefined identifiers if necessary
-        //     eprintln!("[line {}] Warning: Undefined identifier: {}", self.line_number, identifier_str);
-        // }
+        if self.identifiers.contains(&identifier_str) {
+            println!("{} {} null",identifier_str.to_uppercase(), identifier_str.to_lowercase());
+        } else {
+            // Handle undefined identifiers if necessary
+            println!("IDENTIFIER {} null", identifier_str);
+        }
     }
 
     fn handle_unexpected(&mut self, c: char) {

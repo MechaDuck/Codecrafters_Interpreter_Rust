@@ -172,9 +172,16 @@ impl Tokenizer {
 
     fn handle_number(&mut self, chars: &[char], i: &mut usize) {
         let mut number_str = String::new();
-        
+        let mut decimal_found = false;
         // Collect digits to form the number
-        while *i < chars.len() && chars[*i].is_digit(10) {
+        while *i < chars.len() && (chars[*i].is_digit(10) || chars[*i] == '.') {
+            if chars[*i] == '.'{
+                if decimal_found{
+                    // TODO: ERROR HANDLING
+                    break;
+                }
+                decimal_found = true;
+            }
             number_str.push(chars[*i]);
             *i += 1;
         }

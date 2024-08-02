@@ -161,13 +161,17 @@ impl Tokenizer {
         *i -= 1;
 
         let mut interpreted_number = number_str.clone();
+        // 200.100 -> 200.1
         if decimal_found {
             interpreted_number = interpreted_number.trim_end_matches('0').to_string();
-            interpreted_number = format!("{}0", interpreted_number);
-
         }
+        // 200 -> 200.0
         if !interpreted_number.contains('.') {
             interpreted_number = format!("{}.0", interpreted_number);
+        }
+        // 200. -> 200.0
+        if interpreted_number.ends_with("."){
+            interpreted_number = format!("{}0", interpreted_number);
         }
 
         println!("NUMBER {} {}", number_str, interpreted_number);

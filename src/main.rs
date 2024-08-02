@@ -15,25 +15,44 @@ fn main() {
     let command = &args[1];
     let filename = &args[2];
 
-    if command != "tokenize" {
-        writeln!(io::stderr(), "Unknown command: {}", command).unwrap();
-        process::exit(64); // Exit code for unknown command
-    }
-
     let file_contents = fs::read_to_string(filename).unwrap_or_else(|_| {
         writeln!(io::stderr(), "Failed to read file {}", filename).unwrap();
         process::exit(66); // Exit code for file read error
     });
 
-    let mut tokenizer = Tokenizer::new();
 
+    if command == "tokenize" {
+        tokenize(file_contents);
+    } else if command == "parse" {
+
+    }
+    writeln!(io::stderr(), "Unknown command: {}", command).unwrap();
+    process::exit(64); // Exit code for unknown command
+}
+
+
+fn tokenize(file_contents: String){
+    let mut tokenizer = Tokenizer::new();
+    
     for line in file_contents.lines() {
         tokenizer.tokenize(line);
-        tokenizer.line_number += 1;
     }
 
-    println!("EOF  null");
+    for token in tokenizer.tokens {
+        token.print();
+    }
+
     if tokenizer.found_error {
-        process::exit(65); // Exit code for parsing errors
+        std::process::exit(65);
+    }
+
+    std::process::exit(0);
+}
+
+fn parse(file_contents: String) {
+    let mut tokenizer = Tokenizer::new();
+    
+    for line in file_contents.lines() {
+        tokenizer.tokenize(line);
     }
 }

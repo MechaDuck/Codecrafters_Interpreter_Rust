@@ -44,7 +44,13 @@ impl Tokenizer {
                 '!' => self.handle_bang(&chars, &mut i),
                 '<' => self.handle_less(&chars, &mut i),
                 '>' => self.handle_greater(&chars, &mut i),
-                '/' => self.handle_slash(&chars, &mut i),
+                '/' => {
+                    if self.handle_slash(&chars, &mut i){
+                        //Comment detected, skip line
+                        break;
+                    };
+
+                },
                 '\t' | ' ' => {}, // Ignore tabs and spaces
                 '"' => self.handle_string(&chars, &mut i),
                 '0'..='9' => self.handle_number(&chars, &mut i),
@@ -95,13 +101,13 @@ impl Tokenizer {
         }
     }
 
-    fn handle_slash(&mut self, chars: &[char], i: &mut usize) {
+    fn handle_slash(&mut self, chars: &[char], i: &mut usize) -> bool {
         if *i + 1 < chars.len() && chars[*i + 1] == '/' {
             // Comment detected, skip the rest of the line
-            return;
-        } else {
-            println!("SLASH / null");
+            return true;
         }
+        println!("SLASH / null");
+        return false;
     }
 
     fn handle_string(&mut self, chars: &[char], i: &mut usize) {

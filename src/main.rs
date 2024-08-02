@@ -77,6 +77,8 @@ fn main() {
                                 println!("SLASH / null");
                             }
                         },
+                        '\t' => {/* Ignore */},
+                        ' ' => {/* Ignore */},
                         _ => { 
                             eprintln!("[line {}] Error: Unexpected character: {}", line_number, chars[i]);
                             found_error = true;

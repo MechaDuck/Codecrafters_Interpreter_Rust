@@ -70,6 +70,13 @@ fn main() {
                                 println!("GREATER > null");
                             }
                         },
+                        '/' => {
+                            if i + 1 < chars.len() && chars[i + 1] == '/' {
+                                break;
+                            } else {
+                                println!("SLASH / null");
+                            }
+                        },
                         _ => { 
                             eprintln!("[line {}] Error: Unexpected character: {}", line_number, chars[i]);
                             found_error = true;

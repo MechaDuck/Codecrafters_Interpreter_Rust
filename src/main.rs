@@ -192,7 +192,7 @@ impl Tokenizer {
         if decimal_found && number_str.ends_with('.') {
             let number_without_dot = number_str.trim_end_matches('.');
             let float_number_str = format!("{}0", number_without_dot);
-            println!("NUMBER {} (without trailing dot) {}", number_without_dot, float_number_str);
+            println!("NUMBER {} {}", number_without_dot, float_number_str);
         } else {
             println!("NUMBER {} {}", number_str, number_str);
         }

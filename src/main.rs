@@ -134,29 +134,29 @@ impl Tokenizer {
     fn handle_number(&mut self, chars: &[char], i: &mut usize) {
         let mut number_str = String::new();
         let mut decimal_found = false;
-
+        // Collect digits to form the number
         while *i < chars.len() && (chars[*i].is_digit(10) || chars[*i] == '.') {
-            if chars[*i] == '.' {
-                if decimal_found {
-                    // Handle error: multiple decimal points
-                    eprintln!("[line {}] Error: Multiple decimal points in number.", self.line_number);
-                    self.found_error = true;
+            if chars[*i] == '.'{
+                if decimal_found{
+                    // TODO: ERROR HANDLING
                     break;
                 }
-                decimal_found = true;
+                if (*i + 1) < chars.len() && chars[*i + 1].is_digit(10){
+                    decimal_found = true;
+                }else {
+                    break;
+                }
             }
             number_str.push(chars[*i]);
             *i += 1;
         }
 
-        // Adjust `i` by 1 to counter the extra increment in the loop
+        // Decrease `i` by 1 to counter the extra increment in the loop
         *i -= 1;
 
-        if decimal_found && number_str.ends_with('.') {
-            // Remove the trailing dot for the first print
-            let number_without_dot = number_str.trim_end_matches('.');
-            let float_number_str = format!("{}0", number_without_dot);
-            println!("NUMBER {} (without trailing dot) {}", number_without_dot, float_number_str);
+        if !number_str.contains('.') {
+            let float_number_str = format!("{}.0", number_str);
+            println!("NUMBER {} {}", number_str, float_number_str);
         } else {
             println!("NUMBER {} {}", number_str, number_str);
         }

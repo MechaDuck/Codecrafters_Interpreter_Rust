@@ -23,8 +23,11 @@ fn main() {
             let mut found_error = false;
             let mut line_number = 1;
             for line in file_contents.lines() {
-                for c in line.chars(){
-                    match c {
+                let chars: Vec<char> = line.chars().collect();
+                let mut i = 0;
+        
+                while i < chars.len() {
+                    match chars[i] {
                         '(' => println!("LEFT_PAREN ( null"),
                         ')' => println!("RIGHT_PAREN ) null"),
                         '{' => println!("LEFT_BRACE {{ null"),
@@ -35,11 +38,20 @@ fn main() {
                         '+' => println!("PLUS + null"),
                         '-' => println!("MINUS - null"),
                         ';' => println!("SEMICOLON ; null"),
+                        '=' => {
+                            if i + 1 < chars.len() && chars[i + 1] == '=' {
+                                println!("EQUAL_EQUAL == null");
+                                i += 1; // Skip the next character as it's part of the double equal sign
+                            } else {
+                                println!("EQUAL = null");
+                            }
+                        },
                         _ => { 
-                            eprintln!("[line {}] Error: Unexpected character: {}", line_number, c);
+                            eprintln!("[line {}] Error: Unexpected character: {}", line_number, chars[i]);
                             found_error = true;
                         },
                     }
+                    i += 1;
                 }
                 line_number += 1;
             }

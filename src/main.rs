@@ -80,6 +80,7 @@ impl Tokenizer {
                 },
                 '\t' | ' ' => {}, // Ignore tabs and spaces
                 '"' => self.handle_string(&chars, &mut i),
+                '0'..='9' => self.handle_number(&chars, &mut i),
                 _ => self.handle_unexpected(chars[i]),
             }
             i += 1;
@@ -167,5 +168,20 @@ impl Tokenizer {
     fn handle_unexpected(&mut self, c: char) {
         eprintln!("[line {}] Error: Unexpected character: {}", self.line_number, c);
         self.found_error = true;
+    }
+
+    fn handle_number(&mut self, chars: &[char], i: &mut usize) {
+        let mut number_str = String::new();
+        
+        // Collect digits to form the number
+        while *i < chars.len() && chars[*i].is_digit(10) {
+            number_str.push(chars[*i]);
+            *i += 1;
+        }
+
+        // Decrease `i` by 1 to counter the extra increment in the loop
+        *i -= 1;
+
+        println!("NUMBER {} {}", number_str number_str);
     }
 }

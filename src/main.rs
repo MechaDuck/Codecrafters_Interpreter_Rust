@@ -174,12 +174,16 @@ impl Tokenizer {
         // Adjust `i` by 1 to counter the extra increment in the loop
         *i -= 1;
 
-        if self.identifiers.contains(&identifier_str) {
-            println!("IDENTIFIER {} null", identifier_str);
-        } else {
-            // Handle undefined identifiers if necessary
-            eprintln!("[line {}] Warning: Undefined identifier: {}", self.line_number, identifier_str);
-        }
+
+        // Accept all identifiers
+        println!("IDENTIFIER {} null", identifier_str);
+
+        // if self.identifiers.contains(&identifier_str) {
+        //     println!("IDENTIFIER {} null", identifier_str);
+        // } else {
+        //     // Handle undefined identifiers if necessary
+        //     eprintln!("[line {}] Warning: Undefined identifier: {}", self.line_number, identifier_str);
+        // }
     }
 
     fn handle_unexpected(&mut self, c: char) {

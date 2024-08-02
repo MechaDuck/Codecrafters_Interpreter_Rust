@@ -54,6 +54,22 @@ fn main() {
                                 println!("BANG ! null");
                             }
                         },
+                        '<' => {
+                            if i + 1 < chars.len() && chars[i + 1] == '=' {
+                                println!("LESS_EQUAL <= null");
+                                i += 1; // Skip the next character as it's part of the double equal sign
+                            } else {
+                                println!("LESS < null");
+                            }
+                        },
+                        '>' => {
+                            if i + 1 < chars.len() && chars[i + 1] == '=' {
+                                println!("GREATER_EQUAL >= null");
+                                i += 1; // Skip the next character as it's part of the double equal sign
+                            } else {
+                                println!("GREATER > null");
+                            }
+                        },
                         _ => { 
                             eprintln!("[line {}] Error: Unexpected character: {}", line_number, chars[i]);
                             found_error = true;

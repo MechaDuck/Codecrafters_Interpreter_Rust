@@ -180,7 +180,11 @@ impl Tokenizer {
                     // TODO: ERROR HANDLING
                     break;
                 }
-                decimal_found = true;
+                if (*i + 1) < chars.len() && chars[*i + 1].is_digit(10){
+                    decimal_found = true;
+                }else {
+                    break;
+                }
             }
             number_str.push(chars[*i]);
             *i += 1;

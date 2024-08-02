@@ -11,24 +11,16 @@ struct Tokenizer {
 }
 
 impl Tokenizer {
+    // Initialize a new Tokenizer with a predefined set of identifiers.
     fn new() -> Self {
-        let mut identifiers = HashSet::new();
-        identifiers.insert("and".to_string());
-        identifiers.insert("class".to_string());
-        identifiers.insert("else".to_string());
-        identifiers.insert("false".to_string());
-        identifiers.insert("for".to_string());
-        identifiers.insert("fun".to_string());
-        identifiers.insert("if".to_string());
-        identifiers.insert("nil".to_string());
-        identifiers.insert("or".to_string());
-        identifiers.insert("print".to_string());
-        identifiers.insert("return".to_string());
-        identifiers.insert("super".to_string());
-        identifiers.insert("this".to_string());
-        identifiers.insert("true".to_string());
-        identifiers.insert("var".to_string());
-        identifiers.insert("while".to_string());
+        let identifiers = vec![
+            "and", "class", "else", "false", "for", "fun", "if", "nil", "or", "print",
+            "return", "super", "this", "true", "var", "while"
+        ]
+        .into_iter()
+        .map(|s| s.to_string())
+        .collect();
+
         Self {
             found_error: false,
             line_number: 1,
@@ -36,6 +28,7 @@ impl Tokenizer {
         }
     }
 
+    // Tokenize a single line of text.
     fn tokenize(&mut self, line: &str) {
         let chars: Vec<char> = line.chars().collect();
         let mut i = 0;
@@ -57,11 +50,9 @@ impl Tokenizer {
                 '<' => self.handle_less(&chars, &mut i),
                 '>' => self.handle_greater(&chars, &mut i),
                 '/' => {
-                    if self.handle_slash(&chars, &mut i){
-                        //Comment detected, skip line
-                        break;
-                    };
-
+                    if self.handle_slash(&chars, &mut i) {
+                        break; // Comment detected, skip line
+                    }
                 },
                 '\t' | ' ' => {}, // Ignore tabs and spaces
                 '"' => self.handle_string(&chars, &mut i),
@@ -73,10 +64,12 @@ impl Tokenizer {
         }
     }
 
+    // Print a token with its type and value.
     fn print_token(&self, token_type: &str, value: &str) {
         println!("{} {} null", token_type, value);
     }
 
+    // Handle '=' token, including '=='.
     fn handle_equal(&mut self, chars: &[char], i: &mut usize) {
         if *i + 1 < chars.len() && chars[*i + 1] == '=' {
             println!("EQUAL_EQUAL == null");
@@ -86,6 +79,7 @@ impl Tokenizer {
         }
     }
 
+    // Handle '!' token, including '!='.
     fn handle_bang(&mut self, chars: &[char], i: &mut usize) {
         if *i + 1 < chars.len() && chars[*i + 1] == '=' {
             println!("BANG_EQUAL != null");
@@ -95,6 +89,7 @@ impl Tokenizer {
         }
     }
 
+    // Handle '<' token, including '<='.
     fn handle_less(&mut self, chars: &[char], i: &mut usize) {
         if *i + 1 < chars.len() && chars[*i + 1] == '=' {
             println!("LESS_EQUAL <= null");
@@ -104,6 +99,7 @@ impl Tokenizer {
         }
     }
 
+    // Handle '>' token, including '>='.
     fn handle_greater(&mut self, chars: &[char], i: &mut usize) {
         if *i + 1 < chars.len() && chars[*i + 1] == '=' {
             println!("GREATER_EQUAL >= null");
@@ -113,15 +109,16 @@ impl Tokenizer {
         }
     }
 
+    // Handle '/' token, including comments.
     fn handle_slash(&mut self, chars: &[char], i: &mut usize) -> bool {
         if *i + 1 < chars.len() && chars[*i + 1] == '/' {
-            // Comment detected, skip the rest of the line
-            return true;
+            return true; // Comment detected, skip the rest of the line
         }
         println!("SLASH / null");
-        return false;
+        false
     }
 
+    // Handle string literals enclosed in double quotes.
     fn handle_string(&mut self, chars: &[char], i: &mut usize) {
         let mut tmp_string = String::new();
         let mut found_string_end = false;
@@ -144,55 +141,51 @@ impl Tokenizer {
             println!(
                 "STRING \"{}\" {}",
                 tmp_string,
-                tmp_string.trim_matches('"')
+                tmp_string
             );
         }
     }
+
+    // Handle numeric literals, including formatting floats.
     fn handle_number(&mut self, chars: &[char], i: &mut usize) {
         let mut number_str = String::new();
         let mut decimal_found = false;
-        // Collect digits to form the number
+
         while *i < chars.len() && (chars[*i].is_digit(10) || chars[*i] == '.') {
-            if chars[*i] == '.'{
-                if decimal_found{
-                    // TODO: ERROR HANDLING
+            if chars[*i] == '.' {
+                if decimal_found {
+                    // Error handling: multiple decimal points
+                    eprintln!("[line {}] Error: Multiple decimal points in number.", self.line_number);
+                    self.found_error = true;
                     break;
                 }
-                if (*i + 1) < chars.len() && chars[*i + 1].is_digit(10){
-                    decimal_found = true;
-                }else {
-                    break;
-                }
+                decimal_found = true;
             }
             number_str.push(chars[*i]);
             *i += 1;
         }
 
-        // Decrease `i` by 1 to counter the extra increment in the loop
+        // Adjust `i` by 1 to counter the extra increment in the loop
         *i -= 1;
 
+        // Format the number
         let mut interpreted_number = number_str.clone();
-        // 200.100 -> 200.1y
         if decimal_found {
             interpreted_number = interpreted_number.trim_end_matches('0').to_string();
-        }
-        // 200 -> 200.0
-        if !interpreted_number.contains('.') {
-            interpreted_number = format!("{}.0", interpreted_number);
-        }
-        // 200. -> 200.0
-        if interpreted_number.ends_with("."){
-            interpreted_number = format!("{}0", interpreted_number);
+            if interpreted_number.ends_with('.') {
+                interpreted_number.push('0');
+            }
+        } else {
+            interpreted_number = format!("{}.0", number_str);
         }
 
         println!("NUMBER {} {}", number_str, interpreted_number);
- 
     }
 
+    // Handle identifiers, including predefined ones.
     fn handle_identifier(&mut self, chars: &[char], i: &mut usize) {
         let mut identifier_str = String::new();
 
-        // Collect identifier characters
         while *i < chars.len() && (chars[*i].is_alphanumeric() || chars[*i] == '_') {
             identifier_str.push(chars[*i]);
             *i += 1;
@@ -201,18 +194,14 @@ impl Tokenizer {
         // Adjust `i` by 1 to counter the extra increment in the loop
         *i -= 1;
 
-
-        // Accept all identifiers
-        
-
         if self.identifiers.contains(&identifier_str) {
-            println!("{} {} null",identifier_str.to_uppercase(), identifier_str.to_lowercase());
+            println!("{} {} null", identifier_str.to_uppercase(), identifier_str);
         } else {
-            // Handle undefined identifiers if necessary
             println!("IDENTIFIER {} null", identifier_str);
         }
     }
 
+    // Handle unexpected characters.
     fn handle_unexpected(&mut self, c: char) {
         eprintln!("[line {}] Error: Unexpected character: {}", self.line_number, c);
         self.found_error = true;

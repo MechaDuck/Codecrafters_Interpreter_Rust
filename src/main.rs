@@ -189,6 +189,14 @@ impl Tokenizer {
         // Decrease `i` by 1 to counter the extra increment in the loop
         *i -= 1;
 
-        println!("NUMBER {} {}", number_str, number_str);
+        if decimal_found && !number_str.ends_with('.') {
+            println!("NUMBER {} {}", number_str, number_str);
+        } else if decimal_found && number_str.ends_with('.') {
+            // Append ".0" if the number ends with a decimal point
+            let float_number_str = format!("{}0", number_str);
+            println!("NUMBER {} {}", float_number_str, float_number_str);
+        } else {
+            println!("NUMBER {} {}", number_str, number_str);
+        }
     }
 }

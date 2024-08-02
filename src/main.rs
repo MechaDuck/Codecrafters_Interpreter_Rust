@@ -32,8 +32,8 @@ fn main() {
                     ',' => println!("COMMA , null"),
                     '.' => println!("DOT . null"),
                     '+' => println!("PLUS + null"),
-                    '-' => println!("RIGHT_BRACE }} null"),
-                    ';' => println!("RIGHT_BRACE }} null"),
+                    '-' => println!("MINUS - null"),
+                    ';' => println!("SEMICOLON ; null"),
                     _ => {}
                 }
             }

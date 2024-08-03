@@ -22,6 +22,9 @@ impl Parser {
                 "TRUE" | "FALSE" | "NIL" => {
                     self.parsed.push(self.tokens[i].symbol.to_string());
                 },
+                "NUMBER" => {
+                    self.parsed.push(self.tokens[i].content.to_string());
+                },
 
                 _ => {} // Ignore other tokens
             }

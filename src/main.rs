@@ -1,9 +1,11 @@
 mod tokenizer;
+mod parser;
 use std::env;
 use std::fs;
 use std::io::{self, Write};
 use std::process;
 use tokenizer::tokenizer::Tokenizer;
+use parser::parser::Parser;
 
 fn main() {
     let args: Vec<String> = env::args().collect();
@@ -24,19 +26,24 @@ fn main() {
     if command == "tokenize" {
         tokenize(file_contents);
     } else if command == "parse" {
-
+        parse(file_contents);
+    }else {
+        writeln!(io::stderr(), "Unknown command: {}", command).unwrap();
+        process::exit(64); // Exit code for unknown command
     }
-    writeln!(io::stderr(), "Unknown command: {}", command).unwrap();
-    process::exit(64); // Exit code for unknown command
+    process::exit(0);
+
 }
 
 
 fn tokenize(file_contents: String){
     let mut tokenizer = Tokenizer::new();
-    
+    let mut line_number = 1;
     for line in file_contents.lines() {
-        tokenizer.tokenize(line);
+        tokenizer.tokenize(line_number, line);
+        line_number += 1;
     }
+    tokenizer.add_eof();
 
     for token in tokenizer.tokens {
         token.print();
@@ -52,7 +59,19 @@ fn tokenize(file_contents: String){
 fn parse(file_contents: String) {
     let mut tokenizer = Tokenizer::new();
     
+    let mut line_number = 1;
     for line in file_contents.lines() {
-        tokenizer.tokenize(line);
+        tokenizer.tokenize(line_number, line);
+        line_number += 1;
     }
+    tokenizer.add_eof();
+
+    let mut parser = Parser::new(tokenizer.tokens);
+    parser.parse_token();
+    parser.print_parsed();
+
+    if tokenizer.found_error {
+        std::process::exit(65);
+    }
+
 }

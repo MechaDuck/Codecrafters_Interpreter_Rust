@@ -1,7 +1,7 @@
 pub struct Token {
-    name: String,
-    symbol: String,
-    content: String,
+    pub name: String,
+    pub symbol: String,
+    pub content: String,
     line: u64,
     start_char_number: u64,
     end_char_number: u64,
@@ -15,9 +15,9 @@ impl Token {
 
     pub fn print(&self) {
         if let Some(ref err) = self.error {
-            println!("Error: {}", err);
+            eprintln!("[line {}] Error: {}", self.line, err);
         } else {
-            println!("{} {} {} [{}:{}]", self.name, self.symbol, self.content, self.start_char_number, self.end_char_number);
+            println!("{} {} {}", self.name, self.symbol, self.content);
         }
     }
 }

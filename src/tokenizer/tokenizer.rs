@@ -27,7 +27,8 @@ impl Tokenizer {
         }
     }
 
-    pub fn tokenize(&mut self, line: &str) {
+    pub fn tokenize(&mut self, line_number: u64, line: &str) {
+        self.line_number= line_number;
         let chars: Vec<char> = line.chars().collect();
         let mut i = 0;
         let mut char_number = 0;
@@ -35,16 +36,16 @@ impl Tokenizer {
         while i < chars.len() {
             let start_char_number = char_number;
             match chars[i] {
-                '(' => self.add_token("LEFT_PAREN", "(", "", start_char_number, start_char_number + 1),
-                ')' => self.add_token("RIGHT_PAREN", ")", "", start_char_number, start_char_number + 1),
-                '{' => self.add_token("LEFT_BRACE", "{", "", start_char_number, start_char_number + 1),
-                '}' => self.add_token("RIGHT_BRACE", "}", "", start_char_number, start_char_number + 1),
-                '*' => self.add_token("STAR", "*", "", start_char_number, start_char_number + 1),
-                ',' => self.add_token("COMMA", ",", "", start_char_number, start_char_number + 1),
-                '.' => self.add_token("DOT", ".", "", start_char_number, start_char_number + 1),
-                '+' => self.add_token("PLUS", "+", "", start_char_number, start_char_number + 1),
-                '-' => self.add_token("MINUS", "-", "", start_char_number, start_char_number + 1),
-                ';' => self.add_token("SEMICOLON", ";", "", start_char_number, start_char_number + 1),
+                '(' => self.add_token("LEFT_PAREN", "(", "null", start_char_number, start_char_number + 1),
+                ')' => self.add_token("RIGHT_PAREN", ")", "null", start_char_number, start_char_number + 1),
+                '{' => self.add_token("LEFT_BRACE", "{", "null", start_char_number, start_char_number + 1),
+                '}' => self.add_token("RIGHT_BRACE", "}", "null", start_char_number, start_char_number + 1),
+                '*' => self.add_token("STAR", "*", "null", start_char_number, start_char_number + 1),
+                ',' => self.add_token("COMMA", ",", "null", start_char_number, start_char_number + 1),
+                '.' => self.add_token("DOT", ".", "null", start_char_number, start_char_number + 1),
+                '+' => self.add_token("PLUS", "+", "null", start_char_number, start_char_number + 1),
+                '-' => self.add_token("MINUS", "-", "null", start_char_number, start_char_number + 1),
+                ';' => self.add_token("SEMICOLON", ";", "null", start_char_number, start_char_number + 1),
                 '=' => self.handle_equal(&chars, &mut i, start_char_number),
                 '!' => self.handle_bang(&chars, &mut i, start_char_number),
                 '<' => self.handle_less(&chars, &mut i, start_char_number),
@@ -63,9 +64,11 @@ impl Tokenizer {
             i += 1;
             char_number = start_char_number + 1;
         }
-        self.add_token("EOF", "", "null",0, 0)
     }
 
+    pub fn add_eof(&mut self) {
+        self.add_token("EOF", "", "null",0, 0)
+    }
     fn add_token(&mut self, token_type: &str, value: &str, content: &str, start_char_number: u64, end_char_number: u64) {
         let token = Token::new(
             token_type.to_string(),
@@ -81,37 +84,37 @@ impl Tokenizer {
 
     fn handle_equal(&mut self, chars: &[char], i: &mut usize, start_char_number: u64) {
         if *i + 1 < chars.len() && chars[*i + 1] == '=' {
-            self.add_token("EQUAL_EQUAL", "==", "", start_char_number, start_char_number + 2);
+            self.add_token("EQUAL_EQUAL", "==", "null", start_char_number, start_char_number + 2);
             *i += 1; // Skip the next character
         } else {
-            self.add_token("EQUAL", "=", "", start_char_number, start_char_number + 1);
+            self.add_token("EQUAL", "=", "null", start_char_number, start_char_number + 1);
         }
     }
 
     fn handle_bang(&mut self, chars: &[char], i: &mut usize, start_char_number: u64) {
         if *i + 1 < chars.len() && chars[*i + 1] == '=' {
-            self.add_token("BANG_EQUAL", "!=", "", start_char_number, start_char_number + 2);
+            self.add_token("BANG_EQUAL", "!=", "null", start_char_number, start_char_number + 2);
             *i += 1; // Skip the next character
         } else {
-            self.add_token("BANG", "!", "", start_char_number, start_char_number + 1);
+            self.add_token("BANG", "!", "null", start_char_number, start_char_number + 1);
         }
     }
 
     fn handle_less(&mut self, chars: &[char], i: &mut usize, start_char_number: u64) {
         if *i + 1 < chars.len() && chars[*i + 1] == '=' {
-            self.add_token("LESS_EQUAL", "<=", "", start_char_number, start_char_number + 2);
+            self.add_token("LESS_EQUAL", "<=", "null", start_char_number, start_char_number + 2);
             *i += 1; // Skip the next character
         } else {
-            self.add_token("LESS", "<", "", start_char_number, start_char_number + 1);
+            self.add_token("LESS", "<", "null", start_char_number, start_char_number + 1);
         }
     }
 
     fn handle_greater(&mut self, chars: &[char], i: &mut usize, start_char_number: u64) {
         if *i + 1 < chars.len() && chars[*i + 1] == '=' {
-            self.add_token("GREATER_EQUAL", ">=", "", start_char_number, start_char_number + 2);
+            self.add_token("GREATER_EQUAL", ">=", "null", start_char_number, start_char_number + 2);
             *i += 1; // Skip the next character
         } else {
-            self.add_token("GREATER", ">", "", start_char_number, start_char_number + 1);
+            self.add_token("GREATER", ">", "null", start_char_number, start_char_number + 1);
         }
     }
 
@@ -119,7 +122,7 @@ impl Tokenizer {
         if *i + 1 < chars.len() && chars[*i + 1] == '/' {
             return true; // Comment detected, skip the rest of the line
         }
-        self.add_token("SLASH", "/", "", start_char_number, start_char_number + 1);
+        self.add_token("SLASH", "/", "null", start_char_number, start_char_number + 1);
         false
     }
 
@@ -141,7 +144,7 @@ impl Tokenizer {
         }
 
         if !found_string_end {
-            let error_message = format!("[line {}] Error: Unterminated string.", self.line_number);
+            let error_message = format!("Unterminated string.");
             let token = Token::new(
                 "ERROR".to_string(),
                 "STRING".to_string(),
@@ -154,7 +157,7 @@ impl Tokenizer {
             self.tokens.push(token);
             self.found_error = true;
         } else {
-            self.add_token("STRING", &tmp_string, &tmp_string, start_char_number, end_char_number);
+            self.add_token("STRING", &format!("\"{}\"", &tmp_string), &tmp_string, start_char_number, end_char_number);
         }
     }
 
@@ -166,19 +169,7 @@ impl Tokenizer {
         while *i < chars.len() && (chars[*i].is_digit(10) || chars[*i] == '.') {
             if chars[*i] == '.' {
                 if decimal_found {
-                    let error_message = format!("[line {}] Error: Multiple decimal points in number.", self.line_number);
-                    let token = Token::new(
-                        "ERROR".to_string(),
-                        "NUMBER".to_string(),
-                        number_str.clone(),
-                        self.line_number,
-                        start_char_number,
-                        end_char_number + 1,
-                        Some(error_message.clone()),
-                    );
-                    self.tokens.push(token);
-                    self.found_error = true;
-                    return;
+                    break;
                 }
                 decimal_found = true;
             }
@@ -187,7 +178,14 @@ impl Tokenizer {
             end_char_number += 1;
         }
 
-        *i -= 1;
+        if number_str.ends_with(".") {
+            decimal_found = false;
+            number_str.pop();
+            *i -= 2;
+        }else {
+            *i -= 1;
+        }
+
 
         // Format the number
         let mut interpreted_number = number_str.clone();
@@ -216,14 +214,14 @@ impl Tokenizer {
         *i -= 1;
 
         if self.identifiers.contains(&identifier_str) {
-            self.add_token(&identifier_str.to_uppercase(), &identifier_str, "", start_char_number, end_char_number);
+            self.add_token(&identifier_str.to_uppercase(), &identifier_str, "null", start_char_number, end_char_number);
         } else {
-            self.add_token("IDENTIFIER", &identifier_str, "", start_char_number, end_char_number);
+            self.add_token("IDENTIFIER", &identifier_str, "null", start_char_number, end_char_number);
         }
     }
 
     fn handle_unexpected(&mut self, c: char, start_char_number: u64) {
-        let error_message = format!("[line {}] Error: Unexpected character: {}", self.line_number, c);
+        let error_message = format!("Unexpected character: {}", c);
         let token = Token::new(
             "ERROR".to_string(),
             c.to_string(),

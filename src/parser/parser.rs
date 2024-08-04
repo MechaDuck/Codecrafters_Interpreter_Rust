@@ -28,6 +28,7 @@ impl Parser {
                 "STRING" => {
                     self.parsed.push(self.tokens[i].content.to_string());
                 },
+                
                 _ => {} // Ignore other tokens
             }
         }

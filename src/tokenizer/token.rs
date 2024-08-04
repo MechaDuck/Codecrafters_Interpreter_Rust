@@ -20,4 +20,12 @@ impl Token {
             println!("{} {} {}", self.name, self.symbol, self.content);
         }
     }
+
+    pub fn print_advanced_error(&self) {
+        if let Some(ref err) = self.error {
+            eprintln!("[line {}:{}-{}] Error: {}", self.line, self.start_char_number, self.end_char_number, err);
+        } else {
+            println!("{} {} {}", self.name, self.symbol, self.content);
+        }
+    }
 }
